@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/anuj/dotnet-core-webapi:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/anuj/dotnet-core-webapi:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: dotnet-core-webapi
+        chartPath: charts/dotnet-core-webapi
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/anuj/dotnet-core-webapi'
+          image.tag: '{{.DIGEST_HEX}}'
